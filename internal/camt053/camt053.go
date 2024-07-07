@@ -34,35 +34,24 @@ type MessagePagination struct {
 type Statement struct {
 	//XMLName                  xml.Name `xml:"Stmt"`
 	Id                       string              `xml:"Id" json:"id"`
-	ElectronicSequenceNumber *int                `xml:"ElctrncSeqNb" json:"electronicSequenceNumber"`
-	LegalSequenceNumber      *int                `xml:"LglSeqNb" json:"legalSequenceNumber"`
+	ElectronicSequenceNumber *int                `xml:"ElctrncSeqNb" json:"electronicSequenceNumber,omitempty"`
+	LegalSequenceNumber      *int                `xml:"LglSeqNb" json:"legalSequenceNumber,omitempty"`
 	CreationDateTime         string              `xml:"CreDtTm" json:"createdDateTime"`
-	FromDate                 *FromDate           `xml:"FrToDt" json:"fromDate"`
+	FromDate                 *FromDate           `xml:"FrToDt" json:"fromDate,omitempty"`
 	Account                  Account             `xml:"Acct" json:"account"`
 	Balances                 []Balance           `xml:"Bal" json:"balances"`
-	Entries                  *[]Entry            `xml:"Ntry" json:"entries"`
-	TransactionSummary       *TransactionSummary `xml:"TxsSummry" json:"transactionSummary"`
+	Entries                  *[]Entry            `xml:"Ntry" json:"entries,omitempty"`
+	TransactionSummary       *TransactionSummary `xml:"TxsSummry" json:"transactionSummary,omitempty"`
 }
 
 type TransactionSummary struct {
+	TotalCreditEntries *CreditDebitEntry `xml:"TtlCdtNtries" json:"totalCreditEntries,omitempty"`
+	TotalDebitEntries  *CreditDebitEntry `xml:"TtlDbtNtries" json:"totalDebitEntries,omitempty"`
 }
 
-type Balance struct {
-	Type                 BalanceType `xml:"Tp" json:"type"`
-	CreditLine           *CreditLine `xml:"CdtLine" json:"creditLine,omitempty"`
-	Amount               Amount      `xml:"Amt" json:"amount"`
-	CreditDebitIndicator string      `xml:"CdtDbtInd" json:"creditDebitIndicator"`
-	Date                 string      `xml:"Dt>Dt" json:"date"`
-}
-
-type CreditLine struct {
-	Included bool   `xml:"Incl" json:"included"`
-	Amount   Amount `xml:"Amt" json:"amount"`
-}
-
-type BalanceType struct {
-	CodeOrProprietary CodeOrProprietary `xml:"CdOrPrtry" json:"codeOrProprietary"`
-	SubType           *string           `xml:"SubTp>Cd" json:"subType,omitempty"`
+type CreditDebitEntry struct {
+	NumberOfEntries int    `xml:"NbOfNtries" json:"numberOfEntries"`
+	Sum             string `xml:"Sum" json:"sum"`
 }
 
 type CodeOrProprietary struct {
@@ -80,43 +69,14 @@ type FromDate struct {
 	ToDateTime   string `xml:"ToDtTm" json:"toDateTime"`
 }
 
-type Account struct {
-	//XMLName                  xml.Name `xml:"Acct"`
-	Id       AccountId     `xml:"Id" json:"id"`
-	Currency *string       `xml:"Ccy" json:"currency,omitempty"`
-	Owner    *AccountOwner `xml:"Ownr" json:"owner,omitempty"`
-	Servicer *Servicer     `xml:"Svcr" json:"servicer,omitempty"`
-}
-
-type AccountOwner struct {
-	Name     string    `xml:"Nm" json:"name"`
-	Id       AccountId `xml:"Id>OrgId>Othr"`
-	Servicer Servicer  `xml:"Svcr" json:"servicer,omitempty"`
-}
-
-type AccountId struct {
-	IBAN  *string  `xml:"IBAN" json:"IBAN,omitempty"`
-	Other *OtherId `xml:"Othr" json:"other,omitempty"`
-}
-
 type OtherId struct {
-	Id         int    `xml:"Id" json:"id"`
+	Id         uint64 `xml:"Id" json:"id"`
 	SchemeName string `xml:"SchmeNm>Cd" json:"schemeName"`
 }
 
-type SchemeName struct {
-	Code string `xml:"Cd" json:"code"`
-}
-
 type FinancialInstitutionId struct {
-	BIC  string `xml:"BIC" json:"bicCode,omitempty"`
-	Name string `xml:"Nm" json:"name,omitempty"`
-}
-
-type Entry struct {
-	Reference            string `xml:"NtryRef"`
-	Amount               string `xml:"Amt"`
-	CreditDebitIndicator string `xml:"CdtDbtInd"`
+	BIC  *string `xml:"BIC" json:"bicCode,omitempty"`
+	Name *string `xml:"Nm" json:"name,omitempty"`
 }
 
 type Servicer struct {
