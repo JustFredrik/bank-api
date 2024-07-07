@@ -1,24 +1,30 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"runtime"
+	// Standard
 
-	"github.com/justfredrik/bank-api/internal/initializer"
+	// Internal
+	"github.com/justfredrik/bank-api/internal/db"
+	"github.com/justfredrik/bank-api/internal/handlers"
+
+	//External
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	numCPU := runtime.NumCPU()
-	fmt.Printf("Running on %d CPU(s)\n", numCPU)
 
-	camtDoc, err := initializer.LoadLocalData("./data/camt053.xml")
-	if err != nil {
-		fmt.Println(err)
+	if err := db.InitializeLocalMockData(); err != nil {
+		panic(err)
 	}
 
-	jsonBytes, _ := json.MarshalIndent(camtDoc.BankStatement, "", "	")
+	router := gin.Default()
 
-	fmt.Print(string(jsonBytes))
+	router.GET("/accounts", handlers.GetAccounts)
+	router.GET("/accounts/:id", handlers.GetAccount)
 
+	// jsonBytes, _ := json.MarshalIndent(camtDoc.BankStatement, "", "	")
+	// fmt.Print(string(jsonBytes))
+	// fmt.Print(initializer.Bob)
+
+	router.Run()
 }
