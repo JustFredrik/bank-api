@@ -116,7 +116,7 @@ type CreditorReferenceInformation struct {
 
 type ReferredDocumentInformation struct {
 	Type   CodeOrProprietary `xml:"Tp>CdOrPrtry" json:"type,omitempty"`
-	Number int               `xml:"Nb" json:"number,omitempty"`
+	Number string            `xml:"Nb" json:"number,omitempty"`
 }
 
 type ReferredDocumentAmount struct {
