@@ -1,6 +1,7 @@
 package db
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -16,6 +17,15 @@ type BankData struct {
 	Transactions  map[uint64]([]camt053.TransactionDetail)
 }
 
+type IDataBase interface {
+	AccountsExists(accountId uint64) bool
+	GetAccounts(perPage uint16, page uint64) (Accounts, error)
+	GetAccount(accountId uint64) (*Account, error)
+	CreateAccount(camtAcc *camt053.Account) (*Account, error)
+	PatchAccount(accountId uint64, patch *camt053.Account) (*Account, error)
+	GetAccountTransactions(accountId uint64) (Transactions, error)
+}
+
 type Account struct {
 	Account  *camt053.Account  `json:"account"`
 	Balances []camt053.Balance `json:"balances"`
@@ -26,6 +36,16 @@ type Accounts struct {
 	TotalCount int        `json: "totalCount"`
 	Page       int        `json:"page"`
 	PerPage    int        `json:"perPage"`
+}
+
+type Transactions struct {
+	Transactions []*Transactions `json:"transactions"`
+	TotalCount   int             `json: "totalCount"`
+	Page         int             `json:"page"`
+	PerPage      int             `json:"perPage"`
+}
+
+type LimitedAccount struct {
 }
 
 func (db BankData) AccountExists(accountId uint64) bool {
@@ -105,6 +125,7 @@ func ParseLocalCamt053(path string) (camt053.Document, error) {
 	byteData, _ := io.ReadAll(xmlFile)
 
 	if err := xml.Unmarshal(byteData, &data); err != nil {
+
 		return data, err
 	}
 
@@ -112,6 +133,9 @@ func ParseLocalCamt053(path string) (camt053.Document, error) {
 }
 
 func LoadCamt053(data camt053.Document) (err error) {
+
+	jsonData, err := json.MarshalIndent(data, "", "	")
+	fmt.Println(string(jsonData))
 
 	var camtAcc camt053.Account = data.BankStatement.Statement.Account
 	DB.CreateAccount(&camtAcc)
