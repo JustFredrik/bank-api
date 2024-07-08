@@ -17,7 +17,7 @@ func GetPing(c *gin.Context) {
 func GetAccount(c *gin.Context) {
 
 	// validate id param format
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Param("accountId"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "id is not a positive integer",
