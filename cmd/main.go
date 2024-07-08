@@ -1,7 +1,8 @@
 package main
 
 import (
-	// Standard
+	// Load env vars before all other packages
+	_ "github.com/justfredrik/bank-api/internal/envloader"
 
 	// Internal
 	"github.com/justfredrik/bank-api/internal/db"
