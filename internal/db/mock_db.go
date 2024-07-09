@@ -1,7 +1,6 @@
 package db
 
 import (
-	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -12,37 +11,38 @@ import (
 )
 
 type BankData struct {
-	Accounts      map[uint64]Account
-	TotalAccounts uint64
-	Transactions  map[uint64]([]camt053.TransactionDetail)
+	Accounts           map[uint64]*Account
+	TotalAccounts      uint64
+	LoadedTransactions map[string]bool
 }
 
 type IDataBase interface {
 	AccountsExists(accountId uint64) bool
-	GetAccounts(perPage uint16, page uint64) (Accounts, error)
+	GetAccounts(perPage uint16, page uint64) (AccountsResponse, error)
 	GetAccount(accountId uint64) (*Account, error)
 	CreateAccount(camtAcc *camt053.Account) (*Account, error)
 	PatchAccount(accountId uint64, patch *camt053.Account) (*Account, error)
-	GetAccountTransactions(accountId uint64) (Transactions, error)
+	GetAccountTransactions(accountId uint64) (TransactionsResponse, error)
 }
 
 type Account struct {
-	Account  *camt053.Account  `json:"account"`
-	Balances []camt053.Balance `json:"balances"`
+	Account      camt053.Account   `json:"account"`
+	Balances     []camt053.Balance `json:"balances"`
+	Transactions []camt053.Entry   `json:"-"`
 }
 
-type Accounts struct {
-	Accounts   []*Account `json: "accounts"`
-	TotalCount int        `json: "totalCount"`
+type AccountsResponse struct {
+	Accounts   []*Account `json:"accounts"`
+	TotalCount int        `json:"totalCount"`
 	Page       int        `json:"page"`
 	PerPage    int        `json:"perPage"`
 }
 
-type Transactions struct {
-	Transactions []*Transactions `json:"transactions"`
-	TotalCount   int             `json: "totalCount"`
-	Page         int             `json:"page"`
-	PerPage      int             `json:"perPage"`
+type TransactionsResponse struct {
+	Transactions []*camt053.Entry `json:"transactions"`
+	TotalCount   int              `json:"totalCount"`
+	Page         int              `json:"page"`
+	PerPage      int              `json:"perPage"`
 }
 
 type LimitedAccount struct {
@@ -53,20 +53,24 @@ func (db BankData) AccountExists(accountId uint64) bool {
 	return alreadyExists
 }
 
-func (db BankData) CreateAccount(camtAcc *camt053.Account) error {
+func (db BankData) CreateAccount(camtAcc *camt053.Account) (*Account, error) {
 
 	accountId := (*camtAcc).GetId()
 
 	if DB.AccountExists(accountId) {
-		return errors.New("trying to create account that already exists")
+		return nil, errors.New("trying to create account that already exists")
 	}
 
 	DB.TotalAccounts++
-	DB.Accounts[accountId] = Account{
-		Account: camtAcc,
+
+	acc := Account{
+		Account:      *camtAcc,
+		Transactions: make([]camt053.Entry, 0),
 	}
 
-	return nil
+	DB.Accounts[accountId] = &acc
+
+	return &acc, nil
 }
 
 func (db BankData) PatchAccount(accountId uint64, patch *camt053.Account) error {
@@ -80,17 +84,17 @@ func (db BankData) PatchAccount(accountId uint64, patch *camt053.Account) error 
 	return nil
 }
 
-func (db BankData) GetAccounts(perPage uint16, page uint64) (Accounts, error) {
+func (db BankData) GetAccounts(perPage uint16, page uint64) (AccountsResponse, error) {
 
 	// While this may be slow while itterating over a large map of accounts
 	// This is just a moc and in prod you would use and query a real db not this
-	accounts := Accounts{
+	accounts := AccountsResponse{
 		Accounts: make([]*Account, 0),
 	}
 
 	// Populate slice with map values
 	for _, acc := range db.Accounts {
-		accounts.Accounts = append(accounts.Accounts, &acc)
+		accounts.Accounts = append(accounts.Accounts, acc)
 	}
 
 	// Populate accounts with correct data
@@ -102,14 +106,14 @@ func (db BankData) GetAccounts(perPage uint16, page uint64) (Accounts, error) {
 
 func (db BankData) GetAccount(accountId uint64) (*Account, error) {
 	if account, ok := db.Accounts[accountId]; ok {
-		return &account, nil
+		return account, nil
 	}
 	return nil, errors.New("account not found")
 }
 
 var DB BankData = BankData{
-	Accounts:     make(map[uint64]Account),
-	Transactions: make(map[uint64]([]camt053.TransactionDetail)),
+	Accounts:           make(map[uint64]*Account),
+	LoadedTransactions: make(map[string]bool),
 }
 
 func ParseLocalCamt053(path string) (camt053.Document, error) {
@@ -132,13 +136,22 @@ func ParseLocalCamt053(path string) (camt053.Document, error) {
 	return data, err
 }
 
-func LoadCamt053(data camt053.Document) (err error) {
+func LoadCamt053(data camt053.Document) error {
 
-	jsonData, err := json.MarshalIndent(data, "", "	")
-	fmt.Println(string(jsonData))
+	// jsonData, err := json.MarshalIndent(data, "", "	")
+	// fmt.Println(string(jsonData))
 
 	var camtAcc camt053.Account = data.BankStatement.Statement.Account
-	DB.CreateAccount(&camtAcc)
+	_, err := DB.CreateAccount(&camtAcc)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range *(data.BankStatement.Statement.Entries) {
+		if _, ok := DB.LoadedTransactions[*entry.Reference]; !ok {
+
+		}
+	}
 
 	return nil
 }

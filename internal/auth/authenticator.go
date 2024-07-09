@@ -15,19 +15,28 @@ func requestContainsToken(c *gin.Context) bool {
 func CreateMockKeys() {
 	NewAPIKey(ROLE_ADMIN, 0)
 	NewAPIKey(ROLE_ACCOUNT, 54400001111)
+	NewAPIKey(ROLE_ACCOUNT, 13371337984)
 }
 
 func Authenticator(required_role string) (c gin.HandlerFunc) {
 
 	return func(c *gin.Context) {
 
-		// Validate that the API key has Access to resource
-		if !KeyHasAccess(c, required_role) {
-			c.JSON(http.StatusUnauthorized, gin.H{})
+		// Validate that the API key format
+		hasAccess, err := KeyHasAccess(c, required_role)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized", "message": err.Error()})
+			c.Abort()
+			return
+		}
+		// Check if Key has Access
+		if !hasAccess {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized", "message": "Your API key is not authorized to access the requested resource."})
 			c.Abort()
 			return
 		}
 
+		// User Authentication has passed, move on to next middleware / handler.
 		c.Next()
 	}
 }

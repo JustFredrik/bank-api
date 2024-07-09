@@ -1,9 +1,11 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -113,6 +115,72 @@ func NewAPIKey(role string, accountId uint64) IAPIKey {
 	return key
 }
 
-func KeyHasAccess(c *gin.Context, required_role string) bool {
-	return true
+func parseAccountIdParam(accountIdParam string) (uint64, error) {
+	// validate id param format
+	val, err := strconv.ParseUint(accountIdParam, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return val, nil
+}
+
+func extractAuthToken(c *gin.Context) (string, error) {
+	var token string
+	authHeader := c.GetHeader("Authorization")
+
+	// Validate Header and Token
+	{
+		// Check if header is present and has the correct format
+		if authHeader == "" {
+			return "", errors.New("Missing Authorization header")
+		}
+
+		// Check for Malformed header
+		if !strings.HasPrefix(authHeader, "Bearer ") {
+			return "", errors.New("Malformed Authorization header")
+		}
+
+		token = strings.ReplaceAll(strings.TrimPrefix(authHeader, "Bearer "), " ", "")
+
+		// Check for missing Token
+		if token == "" {
+			return "", errors.New("Missing token in Authorization header")
+		}
+	}
+
+	return token, nil
+}
+
+func KeyHasAccess(c *gin.Context, required_role string) (bool, error) {
+
+	token, err := extractAuthToken(c)
+	if err != nil {
+		return false, err
+	}
+
+	// Get API key based on token from Key storage
+	if apiKey, ok := keyTracker.APIKeys[token]; ok {
+		KeyRole := apiKey.Role()
+
+		// Check what role /privalidge the key has
+		switch KeyRole {
+
+		case ROLE_ACCOUNT:
+			// APIKeys accoundId needs to match with query accountId
+			accountIdString := c.Param("accountId")
+			if accountId, err := parseAccountIdParam(accountIdString); err != nil {
+				return (accountId == apiKey.AccountId()), nil
+			}
+		case ROLE_ANY:
+			return true, nil
+		case ROLE_ADMIN:
+			// Admin has full access to API
+			return true, nil
+		default:
+			return false, errors.New("Failed to validate endpoint role rules")
+		}
+
+	}
+
+	return false, nil
 }
