@@ -8,20 +8,21 @@ import (
 	"github.com/justfredrik/bank-api/internal/camt053"
 )
 
-func LoadLocalData(path string) (camt053.Document, error) {
+func LoadLocalData(path string) (camt053 camt053.Document, err error) {
 
-	var doc camt053.Document
 	xmlFile, err := os.Open(path)
 	if err != nil {
-		return doc, err
+		return camt053, err
 	}
 	defer xmlFile.Close()
 
 	byteData, _ := io.ReadAll(xmlFile)
 
-	if err := xml.Unmarshal(byteData, &doc); err != nil {
-		return doc, err
+	if err := xml.Unmarshal(byteData, &camt053); err != nil {
+		return camt053, err
 	}
 
-	return doc, nil
+	return camt053, err
 }
+
+var Bob = 45
