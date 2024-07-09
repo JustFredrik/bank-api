@@ -12,7 +12,7 @@ func SetUpRouter() *gin.Engine {
 	// ====================================================================================
 	{ // Declare Routes
 
-		router.GET("/ping", handlers.GetPing)
+		router.GET("/ping", auth.Authenticator(auth.ROLE_ANY), handlers.GetPing)
 
 		// Only Admin can list all accounts
 		router.GET("/accounts", auth.Authenticator(auth.ROLE_ADMIN), handlers.GetAccounts)
