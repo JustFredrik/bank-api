@@ -20,6 +20,7 @@ func GetAccount(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("accountId"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Bad Request",
 			"message": "id is not a positive integer",
 		})
 	}
@@ -43,7 +44,10 @@ func GetAccounts(c *gin.Context) {
 	// Fetch Accounts from mock db
 	accounts, err := db.DB.GetAccounts(0, 0)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{})
+		c.JSON(http.StatusNotFound, gin.H{
+			"error":   "Not Found",
+			"message": "unable to fetch accounts",
+		})
 		return
 	}
 
