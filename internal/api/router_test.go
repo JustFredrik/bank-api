@@ -8,7 +8,9 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/justfredrik/bank-api/internal/auth"
+	"github.com/justfredrik/bank-api/internal/db"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -56,7 +58,24 @@ type PongResponse struct {
 	Message string `json:"message"`
 }
 
+func setup() {
+	if err := godotenv.Load("../../.env"); err != nil {
+		panic(errors.New("Test Setup Failed. failed to load .env variables with error:" + err.Error()))
+	}
+	if err2 := db.InitializeLocalMockData(); err2 != nil {
+		panic(errors.New("Test Setup Failed. failed to load mock DB with error:" + err2.Error()))
+	}
+	isSetup = true
+}
+
+var isSetup bool = false
+
 func testReqests(t *testing.T, router *gin.Engine, tests []TestRequest) {
+
+	if !isSetup {
+		setup()
+	}
+
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
 
@@ -74,8 +93,6 @@ func testReqests(t *testing.T, router *gin.Engine, tests []TestRequest) {
 
 			// Validate Response Status
 			assert.Equal(t, test.expectedCode, w.Code, "Incorrect Response Status")
-
-			println(w.Body.String())
 
 			// Validate Response Format
 			bodyIsOK, err := jsonContains(w.Body.Bytes(), test.expectedBody)
@@ -167,4 +184,40 @@ func TestAccounts(t *testing.T) {
 	testReqests(t, setUpTestRouter(), putTests)
 	testReqests(t, setUpTestRouter(), patchTests)
 	testReqests(t, setUpTestRouter(), deleteTests)
+}
+
+func TestAccountsAccountId(t *testing.T) {
+
+	adminToken := (auth.NewAPIKey(auth.ROLE_ADMIN, 1337)).Token()
+	accountToken := auth.NewAPIKey(auth.ROLE_ACCOUNT, 54400001111).Token()
+	randomToken := auth.NewAPIKey(auth.ROLE_ACCOUNT, 1337).Token()
+
+	getTests := []TestRequest{
+		{
+			testName:     "Valid Admin API Key",
+			requestType:  "GET",
+			endpoint:     "/accounts/54400001111",
+			headers:      map[string]string{"Authorization": "Bearer " + adminToken},
+			expectedCode: http.StatusOK,
+			expectedBody: map[string]string{"account": "", "balances": ""},
+		},
+		{
+			testName:     "Correct Account API Key",
+			requestType:  "GET",
+			endpoint:     "/accounts/54400001111",
+			headers:      map[string]string{"Authorization": "Bearer " + accountToken},
+			expectedCode: http.StatusOK,
+			expectedBody: map[string]string{"account": "", "balances": ""},
+		},
+		{
+			testName:     "Wrong Account API Key",
+			requestType:  "GET",
+			endpoint:     "/accounts/54400001111",
+			headers:      map[string]string{"Authorization": "Bearer " + randomToken},
+			expectedCode: http.StatusUnauthorized,
+			expectedBody: map[string]string{"error": "Unauthorized", "message": "Your API key is not authorized to access the requested resource"},
+		},
+	}
+
+	testReqests(t, setUpTestRouter(), getTests)
 }
