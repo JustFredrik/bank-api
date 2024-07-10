@@ -180,10 +180,12 @@ func TestAccounts(t *testing.T) {
 	patchTests := []TestRequest{}
 	deleteTests := []TestRequest{}
 
-	testReqests(t, setUpTestRouter(), getTests)
-	testReqests(t, setUpTestRouter(), putTests)
-	testReqests(t, setUpTestRouter(), patchTests)
-	testReqests(t, setUpTestRouter(), deleteTests)
+	testRouter := setUpTestRouter()
+
+	testReqests(t, testRouter, getTests)
+	testReqests(t, testRouter, putTests)
+	testReqests(t, testRouter, patchTests)
+	testReqests(t, testRouter, deleteTests)
 }
 
 func TestAccountsAccountId(t *testing.T) {
