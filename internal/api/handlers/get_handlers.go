@@ -28,7 +28,7 @@ func GetAccount(c *gin.Context) {
 	// Fetch Account from mock db
 	acc, err := db.DB.GetAccount(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not Found", "message": "account not found"})
 		return
 	}
 
@@ -46,7 +46,7 @@ func GetAccounts(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error":   "Not Found",
-			"message": "unable to fetch accounts",
+			"message": "unable to find accounts",
 		})
 		return
 	}
