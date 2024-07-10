@@ -166,11 +166,14 @@ func KeyHasAccess(c *gin.Context, required_role string) (bool, error) {
 
 		case ROLE_ACCOUNT:
 			// APIKeys accoundId needs to match with query accountId
-			accountIdString := c.Param("accountId")
-			if accountId, err := parseAccountIdParam(accountIdString); err != nil {
+			var accountId uint64
+			accountId, err = parseAccountIdParam(c.Param("accountId"))
+			if err == nil {
 				isAdmin := (apiKey.Role() == ROLE_ADMIN)
 				return (isAdmin || (accountId == apiKey.AccountId())), nil
 			}
+			return false, errors.New("unable to validate auth token")
+
 		case ROLE_ANY:
 			return true, nil
 		case ROLE_ADMIN:
