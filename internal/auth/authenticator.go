@@ -31,7 +31,7 @@ func Authenticator(required_role string) (c gin.HandlerFunc) {
 		}
 		// Check if Key has Access
 		if !hasAccess {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized", "message": "Your API key is not authorized to access the requested resource."})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized", "message": "Your API key is not authorized to access the requested resource"})
 			c.Abort()
 			return
 		}
