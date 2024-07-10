@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -29,6 +30,9 @@ func TestGetPing(t *testing.T) {
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
+	var responseMap map[string]string
+	json.Unmarshal(w.Body.Bytes(), &responseMap)
+
 	assert.Equal(t, w.Code, http.StatusOK)
-	assert.Equal(t, "200", w.Body.String())
+	assert.Equal(t, w.Body.String(), "{\"message\":\"pong\"}")
 }
