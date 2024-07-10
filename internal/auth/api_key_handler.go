@@ -160,22 +160,22 @@ func KeyHasAccess(c *gin.Context, required_role string) (bool, error) {
 
 	// Get API key based on token from Key storage
 	if apiKey, ok := keyTracker.APIKeys[token]; ok {
-		KeyRole := apiKey.Role()
 
 		// Check what role /privalidge the key has
-		switch KeyRole {
+		switch required_role {
 
 		case ROLE_ACCOUNT:
 			// APIKeys accoundId needs to match with query accountId
 			accountIdString := c.Param("accountId")
 			if accountId, err := parseAccountIdParam(accountIdString); err != nil {
-				return (accountId == apiKey.AccountId()), nil
+				isAdmin := (apiKey.Role() == ROLE_ADMIN)
+				return (isAdmin || (accountId == apiKey.AccountId())), nil
 			}
 		case ROLE_ANY:
 			return true, nil
 		case ROLE_ADMIN:
 			// Admin has full access to API
-			return true, nil
+			return (apiKey.Role() == ROLE_ADMIN), nil
 		default:
 			return false, errors.New("Failed to validate endpoint role rules")
 		}
