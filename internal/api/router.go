@@ -23,7 +23,7 @@ func SetUpRouter() *gin.Engine {
 		{ // Routes
 			accountAuthGroup.GET("/:accountId", handlers.GetAccount)
 			accountAuthGroup.GET("/:accountId/transactions", handlers.GetAccount)
-			accountAuthGroup.GET("/:accountId/transactions/:transactionId", handlers.GetAccount)
+			accountAuthGroup.GET("/:accountId/transactions/:transactionId", handlers.GetTransaction)
 		}
 	}
 	return router

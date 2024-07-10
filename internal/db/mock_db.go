@@ -111,6 +111,11 @@ func (db BankData) GetAccount(accountId uint64) (*Account, error) {
 	return nil, errors.New("account not found")
 }
 
+func (db BankData) GetTransaction(accountId uint64, transactionId string) (*camt053.Entry, error) {
+
+	return &camt053.Entry{}, nil
+}
+
 var DB BankData = BankData{
 	Accounts:           make(map[uint64]*Account),
 	LoadedTransactions: make(map[string]bool),
