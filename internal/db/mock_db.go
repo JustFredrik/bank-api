@@ -157,19 +157,24 @@ func LoadCamt053(data camt053.Document) error {
 }
 
 func InitializeLocalMockData() (err error) {
-	data, err := ParseLocalCamt053("./data/camt053.xml")
+	if localMockIsInitialized == true {
+		return nil
+	}
+	data, err := ParseLocalCamt053(os.Getenv("PROJECT_DIR") + "/data/camt053.xml")
 	if err != nil {
-		fmt.Println("error here")
 		return err
 	}
 
-	fmt.Println("Parsed local data...")
+	//fmt.Println("Parsed local data...")
 
 	if err = LoadCamt053(data); err != nil {
 		return err
 	}
 
 	fmt.Println("Loaded local data!")
+	localMockIsInitialized = true
 
 	return nil
 }
+
+var localMockIsInitialized bool = false
