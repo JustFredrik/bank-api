@@ -165,9 +165,6 @@ func ParseLocalCamt053(path string) (camt053.Document, error) {
 
 func LoadCamt053(data camt053.Document) error {
 
-	// jsonData, err := json.MarshalIndent(data, "", "	")
-	// fmt.Println(string(jsonData))
-
 	var camtAcc camt053.Account = data.BankStatement.Statement.Account
 	account, err := DB.CreateAccount(&camtAcc)
 	if err != nil {
