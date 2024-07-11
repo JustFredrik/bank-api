@@ -8,6 +8,14 @@ First, if you do not already have GO installed then you have to download and ins
 
 Secondly, run `go mod download` to download all dependencies.
 
+Thirdly, create a `.env` in the project root directory. This ENV file should contain the following:
+```sh
+AUTH_MODE=debug
+PORT=8080
+GIN_MODE=debug
+PROJECT_DIR=[PATH TO PROJECT ROOT DIR]
+```
+
 Finally, to run the project run `go run cmd/main.go` in the projects root directory.
 
 
