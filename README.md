@@ -1,8 +1,18 @@
-# bank-api
- This is a Mock RESTful bank api written in GOlang. It parses and loads mock data from a [camt053 file](https://www.sepaforcorporates.com/swift-for-corporates/a-practical-guide-to-the-bank-statement-camt-053-format/) and uses that for the responses. The API uses a basic API key Authentication method with bearer tokens in the header.
+# justfredrik/bank-api
+ This is a Mock RESTful bank api written in GO. It parses and loads mock data from a [camt053 file](https://www.sepaforcorporates.com/swift-for-corporates/a-practical-guide-to-the-bank-statement-camt-053-format/) and uses that for the responses. The API uses a basic API key Authentication method with bearer tokens in the header.
 
 The API Has the ability to fetch accounts, list accounts, fetch transactions and list the transactions of a given account. Depending on the request resource it will require different role privalidges. 
 
+# Project Setup
+First, if you do not already have GO installed then you have to download and install GO, you can do so [here](https://go.dev/dl/).
+
+Secondly, run `go mod download` to download all dependencies.
+
+Finally, to run the project run `go run cmd/main.go` in the projects root directory.
+
+
+# Project Overview
+This section goes through some asects of the project layout and details of how it works and how to interact with it.
 ## Authorization
 A basic API key system is in place with three levels of access privalidge. These levels are: `Admin`, `Account` and `Any`.
 In order to get access to the service you will need to include a valid API key with the correct access privalidge for the requested resource. 
@@ -32,13 +42,11 @@ The Mock data contains Account data for account `54400001111`, The API key assoc
 ## API Endpoints
 This section lists all valid endpoints in the API along with required header fields and response examples.
 ### GET /accounts
-To list accounts in the API you can call the /accounts end point. You will recieve a 200 OK if you have authorization to access the resource otherwise you will get a 401 Unauthorized error. If you for some reason have access but the server for some reason is u
+To list accounts in the API you can call the /accounts end point. You will recieve a 200 OK if you have authorization to access the resource otherwise you will get a 401 Unauthorized error. If you have access but the server is unable to find the requested resource the server will return a 404 Not Found error.
 
-Required Role: ADMIN
+**Required Role**: Admin
 
 
-```
-```
 
 ## Testing
 The code base has partial code coverage with most focus being on that the end product, the end-points work as expected.
