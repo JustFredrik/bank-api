@@ -132,6 +132,8 @@ Adding a real database such as PostgreSQL for data storage is something that wou
 
 Full code coverage of the codebase would be a good addition, as it stands local packages have very limited coverage.
 
+Creating an internal package for error return maps / errors messages would be good instead of having hard coded messages and error strings in error return JSON. This would enforce consistency and make testing easier.
+
 Expanding and validating that camt053 are loaded properly and follows the spec would be good. An extensive test suite with varied camt053 data would be good to validate the marshaling and unmarshaling of camt053 data. 
 
 This repo is my first lines of GO, a week ago I had never written a line of GO. As such I may not have followed all idioms and best practices. When I've gained more experience in GO it would be beneficial to go back through the code to review it and perhaps refactor to better reflect the idioms and best practices of GO.
