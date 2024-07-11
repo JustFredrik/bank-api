@@ -102,6 +102,7 @@ func testReqests(t *testing.T, router *gin.Engine, tests []TestRequest) {
 	}
 }
 
+// TestAccounts tests GET requests to the /ping endpoint.
 func TestPing(t *testing.T) {
 
 	apiKey := auth.NewAPIKey(auth.ROLE_ACCOUNT, 1337)
@@ -137,6 +138,8 @@ func TestPing(t *testing.T) {
 	testReqests(t, setUpTestRouter(), tests)
 }
 
+// TestAccounts tests GET requests to the /accounts endpoint.
+// This endpoint returns a list of accounts.
 func TestAccounts(t *testing.T) {
 
 	adminToken := auth.NewAPIKey(auth.ROLE_ADMIN, 1337).Token()
@@ -144,7 +147,7 @@ func TestAccounts(t *testing.T) {
 
 	getTests := []TestRequest{
 		{
-			testName:     "	Valid API Key",
+			testName:     "Valid API Key",
 			requestType:  "GET",
 			endpoint:     "/accounts",
 			headers:      map[string]string{"Authorization": "Bearer " + adminToken},
@@ -152,7 +155,7 @@ func TestAccounts(t *testing.T) {
 			expectedBody: map[string]string{"accounts": ""},
 		},
 		{
-			testName:     "	Unauthorized API Key",
+			testName:     "Unauthorized API Key",
 			requestType:  "GET",
 			endpoint:     "/accounts",
 			headers:      map[string]string{"Authorization": "Bearer " + accountToken},
@@ -160,7 +163,7 @@ func TestAccounts(t *testing.T) {
 			expectedBody: map[string]string{"error": "Unauthorized", "message": "Your API key is not authorized to access the requested resource"},
 		},
 		{
-			testName:     "	malformed header",
+			testName:     "Malformed header",
 			requestType:  "GET",
 			endpoint:     "/accounts",
 			headers:      map[string]string{"Authorization": "Beer " + accountToken},
@@ -168,7 +171,7 @@ func TestAccounts(t *testing.T) {
 			expectedBody: map[string]string{"error": "Unauthorized", "message": "Malformed Authorization header"},
 		},
 		{
-			testName:     "	missing header",
+			testName:     "Missing header",
 			requestType:  "GET",
 			endpoint:     "/accounts",
 			headers:      map[string]string{"ThisIsWrong": "Fox " + accountToken},
@@ -176,18 +179,12 @@ func TestAccounts(t *testing.T) {
 			expectedBody: map[string]string{"error": "Unauthorized", "message": "Missing Authorization header"},
 		},
 	}
-	putTests := []TestRequest{}
-	patchTests := []TestRequest{}
-	deleteTests := []TestRequest{}
+	testReqests(t, setUpTestRouter(), getTests)
 
-	testRouter := setUpTestRouter()
-
-	testReqests(t, testRouter, getTests)
-	testReqests(t, testRouter, putTests)
-	testReqests(t, testRouter, patchTests)
-	testReqests(t, testRouter, deleteTests)
 }
 
+// TestAccountsAccountId tests GET requests to the /accounts/:accountId endpoint.
+// This endpoint returns a specific account.
 func TestAccountsAccountId(t *testing.T) {
 
 	adminToken := (auth.NewAPIKey(auth.ROLE_ADMIN, 1337)).Token()
@@ -222,4 +219,130 @@ func TestAccountsAccountId(t *testing.T) {
 	}
 
 	testReqests(t, setUpTestRouter(), getTests)
+}
+
+// TestAccountTransactions tests GET requests to the /accounts/:accountId/transactions endpoint.
+// This endpoint returns a list of account transactions.
+func TestAccountTransactions(t *testing.T) {
+
+	adminToken := auth.NewAPIKey(auth.ROLE_ADMIN, 1337).Token()
+	accountToken := auth.NewAPIKey(auth.ROLE_ACCOUNT, 54400001111).Token()
+	randomToken := auth.NewAPIKey(auth.ROLE_ACCOUNT, 1337).Token()
+
+	expectedOKBody := map[string]string{
+		"transactions": "",
+		"totalCount":   "",
+		"page":         "",
+		"perPage":      "",
+	}
+
+	expectedUnauthorizedBody := map[string]string{
+		"error":   "Unauthorized",
+		"message": "Your API key is not authorized to access the requested resource",
+	}
+
+	getTests := []TestRequest{
+		{
+			testName:     "Valid API Key (Admin)",
+			requestType:  "GET",
+			endpoint:     "/accounts/54400001111/transactions",
+			headers:      map[string]string{"Authorization": "Bearer " + adminToken},
+			expectedCode: http.StatusOK,
+			expectedBody: expectedOKBody,
+		},
+		{
+			testName:     "Valid API Key (Account Owner)",
+			requestType:  "GET",
+			endpoint:     "/accounts/54400001111/transactions",
+			headers:      map[string]string{"Authorization": "Bearer " + accountToken},
+			expectedCode: http.StatusOK,
+			expectedBody: expectedOKBody,
+		},
+		{
+			testName:     "Unauthorized API Key",
+			requestType:  "GET",
+			endpoint:     "/accounts/54400001111/transactions",
+			headers:      map[string]string{"Authorization": "Bearer " + randomToken},
+			expectedCode: http.StatusUnauthorized,
+			expectedBody: expectedUnauthorizedBody,
+		},
+	}
+	testReqests(t, setUpTestRouter(), getTests)
+
+}
+
+// TestAccountTransaction tests GET requests for the /accounts/:accountId/transactions/:transactionRef endpoint.
+// This endpoint returns a specific account transaction.
+func TestAccountTransaction(t *testing.T) {
+
+	adminToken := auth.NewAPIKey(auth.ROLE_ADMIN, 1337).Token()
+	accountToken := auth.NewAPIKey(auth.ROLE_ACCOUNT, 54400001111).Token()
+	randomToken := auth.NewAPIKey(auth.ROLE_ACCOUNT, 1337).Token()
+
+	expectedOKBody := map[string]string{
+		"reference":            "",
+		"amount":               "",
+		"creditDebitIndicator": "",
+		"status":               "",
+		"bookingDate":          "",
+		"valueDate":            "",
+		"accountServicerRef":   "",
+		"bankTransactionCode":  "",
+		"entryDetails":         "",
+	}
+
+	expectedUnauthorizedBody := map[string]string{
+		"error":   "Unauthorized",
+		"message": "Your API key is not authorized to access the requested resource",
+	}
+
+	expectedNotFoundBody := map[string]string{
+		"error":   "Not Found",
+		"message": "transaction not found",
+	}
+
+	getTests := []TestRequest{
+		{
+			testName:     "Valid API Key (Admin)",
+			requestType:  "GET",
+			endpoint:     "/accounts/54400001111/transactions/JAMBO81518-0029248",
+			headers:      map[string]string{"Authorization": "Bearer " + adminToken},
+			expectedCode: http.StatusOK,
+			expectedBody: expectedOKBody,
+		},
+		{
+			testName:     "Valid API Key (Account Owner)",
+			requestType:  "GET",
+			endpoint:     "/accounts/54400001111/transactions/JAMBO81518-0029248",
+			headers:      map[string]string{"Authorization": "Bearer " + accountToken},
+			expectedCode: http.StatusOK,
+			expectedBody: expectedOKBody,
+		},
+		{
+			testName:     "Unauthorized API Key",
+			requestType:  "GET",
+			endpoint:     "/accounts/54400001111/transactions/JAMBO81518-0029248",
+			headers:      map[string]string{"Authorization": "Bearer " + randomToken},
+			expectedCode: http.StatusUnauthorized,
+			expectedBody: expectedUnauthorizedBody,
+		},
+		{
+			testName:     "Non existant transaction",
+			requestType:  "GET",
+			endpoint:     "/accounts/54400001111/transactions/NON-EXISTANT-TRANSACTION-1337",
+			headers:      map[string]string{"Authorization": "Bearer " + accountToken},
+			expectedCode: http.StatusNotFound,
+			expectedBody: expectedNotFoundBody,
+		},
+		{
+			testName:     "Non existant transaction (Unauthorized)",
+			requestType:  "GET",
+			endpoint:     "/accounts/54400001111/transactions/NON-EXISTANT-TRANSACTION-1337",
+			headers:      map[string]string{"Authorization": "Bearer " + randomToken},
+			expectedCode: http.StatusUnauthorized,
+			expectedBody: expectedUnauthorizedBody,
+		},
+	}
+	testReqests(t, setUpTestRouter(), getTests)
+
 }
