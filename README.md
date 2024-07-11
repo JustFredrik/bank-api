@@ -1,4 +1,4 @@
-# justfredrik/bank-api
+# JustFredrik/bank-api
  This is a Mock RESTful bank API written in GO. It parses and loads mock data from a [camt053 file](https://www.sepaforcorporates.com/swift-for-corporates/a-practical-guide-to-the-bank-statement-camt-053-format/) and uses that for the responses. The API uses a basic API key authentication method with bearer tokens in the header.
 
 The API Has the ability to fetch accounts, list accounts, fetch transactions and list the transactions of a given account. Depending on the request resource it will require different role privileges. 
