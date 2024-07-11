@@ -22,8 +22,8 @@ func SetUpRouter() *gin.Engine {
 		accountAuthGroup.Use(auth.Authenticator(auth.ROLE_ACCOUNT))
 		{ // Routes
 			accountAuthGroup.GET("/:accountId", handlers.GetAccount)
-			accountAuthGroup.GET("/:accountId/transactions", handlers.GetAccount)
-			accountAuthGroup.GET("/:accountId/transactions/:transactionId", handlers.GetTransaction)
+			accountAuthGroup.GET("/:accountId/transactions", handlers.GetTransactions)
+			accountAuthGroup.GET("/:accountId/transactions/:transactionRef", handlers.GetTransaction)
 		}
 	}
 	return router

@@ -23,12 +23,13 @@ type IDataBase interface {
 	CreateAccount(camtAcc *camt053.Account) (*Account, error)
 	PatchAccount(accountId uint64, patch *camt053.Account) (*Account, error)
 	GetAccountTransactions(accountId uint64) (TransactionsResponse, error)
+	GetAccountTransaction(accountId uint64, transactionRef string) (TransactionsResponse, error)
 }
 
 type Account struct {
-	Account      camt053.Account   `json:"account"`
-	Balances     []camt053.Balance `json:"balances"`
-	Transactions []camt053.Entry   `json:"-"`
+	Account      camt053.Account          `json:"account"`
+	Balances     []camt053.Balance        `json:"balances"`
+	Transactions map[string]camt053.Entry `json:"-"`
 }
 
 type AccountsResponse struct {
@@ -65,7 +66,7 @@ func (db BankData) CreateAccount(camtAcc *camt053.Account) (*Account, error) {
 
 	acc := Account{
 		Account:      *camtAcc,
-		Transactions: make([]camt053.Entry, 0),
+		Transactions: make(map[string]camt053.Entry, 0),
 	}
 
 	DB.Accounts[accountId] = &acc
@@ -111,9 +112,44 @@ func (db BankData) GetAccount(accountId uint64) (*Account, error) {
 	return nil, errors.New("account not found")
 }
 
-func (db BankData) GetTransaction(accountId uint64, transactionId string) (*camt053.Entry, error) {
+func (db BankData) GetAccountTransactions(accountId uint64) (*TransactionsResponse, error) {
+	transactions := []*camt053.Entry{}
 
-	return &camt053.Entry{}, nil
+	// Fetch Account
+	account, err := db.GetAccount(accountId)
+	if err != nil {
+		return nil, nil
+	}
+
+	// Convert Map data to slice since we don't use a real DB
+	for _, transaction := range account.Transactions {
+		transactions = append(transactions, &transaction)
+	}
+
+	totalCount := len(transactions)
+
+	return &TransactionsResponse{
+		Transactions: transactions,
+		TotalCount:   totalCount,
+		Page:         1,
+		PerPage:      totalCount,
+	}, nil
+}
+
+func (db BankData) GetAccountTransaction(accountId uint64, transactionRef string) (*camt053.Entry, error) {
+
+	// Fetch Account
+	account, err := db.GetAccount(accountId)
+	if err != nil {
+		return nil, errors.New("unable to fetch account data")
+	}
+
+	transaction, ok := account.Transactions[transactionRef]
+	if !ok {
+		return nil, errors.New("transaction not found")
+	}
+
+	return &transaction, nil
 }
 
 var DB BankData = BankData{
@@ -147,14 +183,14 @@ func LoadCamt053(data camt053.Document) error {
 	// fmt.Println(string(jsonData))
 
 	var camtAcc camt053.Account = data.BankStatement.Statement.Account
-	_, err := DB.CreateAccount(&camtAcc)
+	account, err := DB.CreateAccount(&camtAcc)
 	if err != nil {
 		return err
 	}
 
 	for _, entry := range *(data.BankStatement.Statement.Entries) {
 		if _, ok := DB.LoadedTransactions[*entry.Reference]; !ok {
-
+			account.Transactions[*entry.Reference] = entry
 		}
 	}
 

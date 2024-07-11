@@ -47,7 +47,6 @@ func GetAccount(c *gin.Context) {
 }
 
 func GetAccounts(c *gin.Context) {
-
 	// No support for pagination but would be good to have if in real prod
 
 	// Fetch Accounts from mock db
@@ -68,17 +67,41 @@ func GetTransaction(c *gin.Context) {
 	// validate accountId param format
 	accountId, err := validateAccountIdParam(c)
 	if err != nil {
+		// This should technically be unreachable since this has already been validated in the AUTH step.
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "the server was uanble to validate the accountId"})
 		return
 	}
 
-	// Fetch Account from mock db
-	transaction, err := db.DB.GetTransaction(accountId, c.Param("transactionId"))
+	// Fetch Transaction from mock db
+	transaction, err := db.DB.GetAccountTransaction(accountId, c.Param("transactionRef"))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not Found", "message": "transaction not found"})
 		return
 	}
 
-	// Return valid account data
+	// Return valid transaction data
 	c.JSON(http.StatusOK, *transaction)
+
+}
+
+func GetTransactions(c *gin.Context) {
+	// No support for pagination but would be good to have if in real prod
+	// validate accountId param format
+	accountId, err := validateAccountIdParam(c)
+	if err != nil {
+		// This should technically be unreachable since this has already been validated in the AUTH step.
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "the server was uanble to validate the accountId"})
+		return
+	}
+
+	// Fetch transactions from mock db
+	transactions, err := db.DB.GetAccountTransactions(accountId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "the server was uanble to fetch the transactions"})
+		return
+	}
+
+	// Return valid transactions data
+	c.JSON(http.StatusOK, transactions)
 
 }
