@@ -2,6 +2,7 @@ package camt053
 
 type Entry struct {
 	Reference            *string `xml:"NtryRef" json:"reference"`
+	URLReference         *string `xml:"-" json:"urlReference"` // Not part of camt053, used as resource ref in API.
 	Amount               Amount  `xml:"Amt" json:"amount"`
 	CreditDebitIndicator string  `xml:"CdtDbtInd" json:"creditDebitIndicator"`
 	//RvslInd optional

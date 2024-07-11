@@ -172,8 +172,16 @@ func LoadCamt053(data camt053.Document) error {
 	}
 
 	for _, entry := range *(data.BankStatement.Statement.Entries) {
-		if _, ok := DB.LoadedTransactions[*entry.Reference]; !ok {
-			account.Transactions[*entry.Reference] = entry
+
+		// Convert Ref to URL friendly string
+		{
+			URLSafeRef := convertEntryRef(*entry.Reference)
+			entry.URLReference = &URLSafeRef
+		}
+
+		// Add transaction if no duplicate exists
+		if _, ok := DB.LoadedTransactions[*entry.URLReference]; !ok {
+			account.Transactions[*entry.URLReference] = entry
 		}
 	}
 
@@ -199,6 +207,23 @@ func InitializeLocalMockData() (err error) {
 	localMockIsInitialized = true
 
 	return nil
+}
+
+// Converts references to URL friendly references.
+func convertEntryRef(rawRef string) string {
+	// These strings are not good to have in a resource name/Id/Ref in an URL
+	unwantedCharacters := []string{";", "/", "?", ":", "@", "=", "&", "\"",
+		"<", ">", "#", "%", "{", "}", "|", "\\", "^", "~", "[", "]", "`", " "}
+
+	// Tread spaces as -
+	resRef := strings.ReplaceAll(rawRef, " ", "-")
+
+	// Remove all unwanted Characters
+	for _, char := range unwantedCharacters {
+		resRef = strings.ReplaceAll(rawRef, char, "")
+	}
+
+	return resRef
 }
 
 var localMockIsInitialized bool = false
