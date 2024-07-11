@@ -1,3 +1,4 @@
+// Package auth provides authentication utilities and moddleware for the server.
 package auth
 
 import (
@@ -6,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestParseAccountIdParam check that the accountId is correctly converted to a uint64.
 func TestParseAccountIdParam(t *testing.T) {
 
 	// Declare Tests

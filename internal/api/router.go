@@ -1,3 +1,4 @@
+// package api creates is where the gin router is declared.
 package api
 
 import (
@@ -6,12 +7,14 @@ import (
 	"github.com/justfredrik/bank-api/internal/auth"
 )
 
+// SetUpRouter sets up the main router of the API service.
 func SetUpRouter() *gin.Engine {
 	router := gin.Default() // Default router uses middlewares Logger and Recovery
 
 	// ====================================================================================
 	{ // Declare Routes
 
+		// Anyone with a valid API key can ping the API endpoint
 		router.GET("/ping", auth.Authenticator(auth.ROLE_ANY), handlers.GetPing)
 
 		// Only Admin can list all accounts

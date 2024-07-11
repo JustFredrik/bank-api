@@ -1,3 +1,4 @@
+// Package auth provides authentication utilities and moddleware for the server.
 package auth
 
 import (

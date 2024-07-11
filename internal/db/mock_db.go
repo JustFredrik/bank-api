@@ -1,3 +1,4 @@
+// package db is a local mock database.
 package db
 
 import (
@@ -6,10 +7,12 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/justfredrik/bank-api/internal/camt053"
 )
 
+// IDataBase represents the Mock Database
 type IDataBase interface {
 	AccountsExists(accountId uint64) bool
 	GetAccounts(perPage uint16, page uint64) (AccountsResponse, error)
@@ -26,12 +29,14 @@ type BankData struct {
 	LoadedTransactions map[string]bool
 }
 
+// Account stores an account along with it's balances and transactions.
 type Account struct {
 	Account      camt053.Account          `json:"account"`
 	Balances     []camt053.Balance        `json:"balances"`
 	Transactions map[string]camt053.Entry `json:"-"`
 }
 
+// AccountResponse is the format for /accounts request responses.
 type AccountsResponse struct {
 	Accounts   []*Account `json:"accounts"`
 	TotalCount int        `json:"totalCount"`
@@ -39,6 +44,7 @@ type AccountsResponse struct {
 	PerPage    int        `json:"perPage"`
 }
 
+// TransactionsResponse is the format for /transactions request responses.
 type TransactionsResponse struct {
 	Transactions []*camt053.Entry `json:"transactions"`
 	TotalCount   int              `json:"totalCount"`
@@ -46,11 +52,13 @@ type TransactionsResponse struct {
 	PerPage      int              `json:"perPage"`
 }
 
+// AccountExists checks if an account exists in the database.
 func (db BankData) AccountExists(accountId uint64) bool {
 	_, alreadyExists := DB.Accounts[accountId]
 	return alreadyExists
 }
 
+// CreateAccount creates an account in the database.
 func (db BankData) CreateAccount(camtAcc *camt053.Account) (*Account, error) {
 
 	accountId := (*camtAcc).GetId()
@@ -71,6 +79,7 @@ func (db BankData) CreateAccount(camtAcc *camt053.Account) (*Account, error) {
 	return &acc, nil
 }
 
+// GetAccounts gets the list of accounts in the database. (pagination is not implemented)
 func (db BankData) GetAccounts(perPage uint16, page uint64) (AccountsResponse, error) {
 
 	// While this may be slow while itterating over a large map of accounts
@@ -91,6 +100,7 @@ func (db BankData) GetAccounts(perPage uint16, page uint64) (AccountsResponse, e
 	return accounts, nil
 }
 
+// GetAccount gets a specific account from the database.
 func (db BankData) GetAccount(accountId uint64) (*Account, error) {
 	if account, ok := db.Accounts[accountId]; ok {
 		return account, nil
@@ -98,6 +108,7 @@ func (db BankData) GetAccount(accountId uint64) (*Account, error) {
 	return nil, errors.New("account not found")
 }
 
+// GetAccountTransactions gets a list of an accounts transactions from the database.
 func (db BankData) GetAccountTransactions(accountId uint64) (*TransactionsResponse, error) {
 	transactions := []*camt053.Entry{}
 
@@ -122,6 +133,7 @@ func (db BankData) GetAccountTransactions(accountId uint64) (*TransactionsRespon
 	}, nil
 }
 
+// GetAccountTransaction gets a specific transaction for an ccount from the database.
 func (db BankData) GetAccountTransaction(accountId uint64, transactionRef string) (*camt053.Entry, error) {
 
 	// Fetch Account
@@ -138,11 +150,13 @@ func (db BankData) GetAccountTransaction(accountId uint64, transactionRef string
 	return &transaction, nil
 }
 
+// Instance of the BankData Database used as the database in the project.
 var DB BankData = BankData{
 	Accounts:           make(map[uint64]*Account),
 	LoadedTransactions: make(map[string]bool),
 }
 
+// ParseLocalCamt053 opens and unmarshals a camt053 document.
 func ParseLocalCamt053(path string) (camt053.Document, error) {
 
 	var data camt053.Document
@@ -163,14 +177,17 @@ func ParseLocalCamt053(path string) (camt053.Document, error) {
 	return data, err
 }
 
+// Loads unmarshaled camt053 into the database.
 func LoadCamt053(data camt053.Document) error {
 
+	// Load Account data and Create Account
 	var camtAcc camt053.Account = data.BankStatement.Statement.Account
 	account, err := DB.CreateAccount(&camtAcc)
 	if err != nil {
 		return err
 	}
 
+	// Load Transactions (Entries) into Account data struct
 	for _, entry := range *(data.BankStatement.Statement.Entries) {
 
 		// Convert Ref to URL friendly string
@@ -188,6 +205,7 @@ func LoadCamt053(data camt053.Document) error {
 	return nil
 }
 
+// InitializeLocalMockData loads the /data/camt053.xml file for testing.
 func InitializeLocalMockData() (err error) {
 	if localMockIsInitialized == true {
 		return nil
@@ -226,4 +244,5 @@ func convertEntryRef(rawRef string) string {
 	return resRef
 }
 
+// Stores if mock data has already been initialized or not
 var localMockIsInitialized bool = false

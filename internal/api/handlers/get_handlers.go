@@ -1,3 +1,4 @@
+// package handlers provides handler functions linking the endpoints in the router to other internal systems.
 package handlers
 
 import (
@@ -8,6 +9,7 @@ import (
 	"github.com/justfredrik/bank-api/internal/db"
 )
 
+// validateAccountIdParam makes sure that the accountId is a uint64.
 func validateAccountIdParam(c *gin.Context) (uint64, error) {
 	id, err := strconv.ParseUint(c.Param("accountId"), 10, 64)
 	if err != nil {
@@ -20,12 +22,14 @@ func validateAccountIdParam(c *gin.Context) (uint64, error) {
 	return id, err
 }
 
+// GetPing is a gin Handler that returns a pong resonse to the requester.
 func GetPing(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
 	})
 }
 
+// GetAccount is a gin Handler that retrieves an account based on the accountId parameter.
 func GetAccount(c *gin.Context) {
 
 	id, err := validateAccountIdParam(c)
@@ -43,6 +47,7 @@ func GetAccount(c *gin.Context) {
 
 }
 
+// GetAccounts is a gin Handler that returns a list of accounts to the requester.
 func GetAccounts(c *gin.Context) {
 	// No support for pagination but would be good to have if in real prod
 
@@ -58,6 +63,7 @@ func GetAccounts(c *gin.Context) {
 	c.JSON(http.StatusOK, accounts)
 }
 
+// GetTransaction is a gin Handler that returns a specific account transaction to the requester.
 func GetTransaction(c *gin.Context) {
 
 	accountId, err := validateAccountIdParam(c)
@@ -77,8 +83,10 @@ func GetTransaction(c *gin.Context) {
 
 }
 
+// GetTransactions returns a list of transactions associated with an account.
 func GetTransactions(c *gin.Context) {
 	// No support for pagination but would be good to have if in real prod
+
 	accountId, err := validateAccountIdParam(c)
 	if err != nil {
 		// This should technically be unreachable since this has already been validated in the AUTH step.

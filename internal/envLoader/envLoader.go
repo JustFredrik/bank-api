@@ -1,3 +1,4 @@
+// package envloader is used to load .env files in the main.go file.
 package envloader
 
 import "github.com/joho/godotenv"
@@ -14,6 +15,7 @@ func init() {
 	loaded = true
 }
 
+// IsLoaded returns if .env variables are loaded or not.
 func IsLoaded() bool {
 	return loaded
 }
