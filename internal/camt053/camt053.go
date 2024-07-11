@@ -60,8 +60,8 @@ type CodeOrProprietary struct {
 }
 
 type Amount struct {
-	Currency string `xml:"Ccy,attr"`
-	Value    string `xml:",chardata"`
+	Currency string `xml:"Ccy,attr" json:"currency"`
+	Value    string `xml:",chardata" json:"value"`
 }
 
 type FromDate struct {
