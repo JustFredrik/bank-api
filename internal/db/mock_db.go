@@ -46,9 +46,6 @@ type TransactionsResponse struct {
 	PerPage      int              `json:"perPage"`
 }
 
-type LimitedAccount struct {
-}
-
 func (db BankData) AccountExists(accountId uint64) bool {
 	_, alreadyExists := DB.Accounts[accountId]
 	return alreadyExists
