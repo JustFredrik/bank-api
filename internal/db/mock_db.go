@@ -10,12 +10,6 @@ import (
 	"github.com/justfredrik/bank-api/internal/camt053"
 )
 
-type BankData struct {
-	Accounts           map[uint64]*Account
-	TotalAccounts      uint64
-	LoadedTransactions map[string]bool
-}
-
 type IDataBase interface {
 	AccountsExists(accountId uint64) bool
 	GetAccounts(perPage uint16, page uint64) (AccountsResponse, error)
@@ -23,6 +17,13 @@ type IDataBase interface {
 	CreateAccount(camtAcc *camt053.Account) (*Account, error)
 	GetAccountTransactions(accountId uint64) (TransactionsResponse, error)
 	GetAccountTransaction(accountId uint64, transactionRef string) (TransactionsResponse, error)
+}
+
+// BankData is used as the root of the database. Implements IDataBase
+type BankData struct {
+	Accounts           map[uint64]*Account
+	TotalAccounts      uint64
+	LoadedTransactions map[string]bool
 }
 
 type Account struct {
