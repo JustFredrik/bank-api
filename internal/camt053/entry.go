@@ -100,10 +100,11 @@ type TransactionReferences struct {
 
 type RemittanceInformation struct {
 	Unstructured *[]string                          `xml:"Ustrd" json:"unstructured,omitempty"`
-	Structured   *[]StructuredRemiitanceInformation `xml:"Strd" json:"structured,omitempty"`
+	Structured   *[]StructuredRemittanceInformation `xml:"Strd" json:"structured,omitempty"`
 }
 
-type StructuredRemiitanceInformation struct {
+// StructuredRemittanceInformation represents the 'Strd' XML tag.
+type StructuredRemittanceInformation struct {
 	ReferredDocumentInformation  *ReferredDocumentInformation  `xml:"RfrdDocInf" json:"referredDocumentInformation,omitempty"`
 	ReferredDocumentAmount       *ReferredDocumentAmount       `xml:"RfrdDocAmt" json:"referredDocumentAmount,omitempty"`
 	CreditorReferenceInformation *CreditorReferenceInformation `xml:"CdtrRefInf" json:"creditorReferenceInformation"`
