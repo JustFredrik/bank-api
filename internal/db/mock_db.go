@@ -21,7 +21,6 @@ type IDataBase interface {
 	GetAccounts(perPage uint16, page uint64) (AccountsResponse, error)
 	GetAccount(accountId uint64) (*Account, error)
 	CreateAccount(camtAcc *camt053.Account) (*Account, error)
-	PatchAccount(accountId uint64, patch *camt053.Account) (*Account, error)
 	GetAccountTransactions(accountId uint64) (TransactionsResponse, error)
 	GetAccountTransaction(accountId uint64, transactionRef string) (TransactionsResponse, error)
 }
@@ -69,17 +68,6 @@ func (db BankData) CreateAccount(camtAcc *camt053.Account) (*Account, error) {
 	DB.Accounts[accountId] = &acc
 
 	return &acc, nil
-}
-
-func (db BankData) PatchAccount(accountId uint64, patch *camt053.Account) error {
-
-	if !DB.AccountExists(accountId) {
-		return errors.New("trying to patch account that does not exist")
-	}
-
-	// Do stuff
-
-	return nil
 }
 
 func (db BankData) GetAccounts(perPage uint16, page uint64) (AccountsResponse, error) {
