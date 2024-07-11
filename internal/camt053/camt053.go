@@ -2,7 +2,7 @@ package camt053
 
 import "encoding/xml"
 
-// Tom Payne gave me some pointers on how to work with encoding/xml
+// Tom Payne had a good talk that gave me some pointers on how to work with encoding/xml
 
 type Document struct {
 	XMLName       xml.Name                `xml:"Document"`
